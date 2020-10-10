@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EC2 api</title>
+</head>
+<body>
+  <h1 id="info">Hello!</h1>
+  <p>機器數量:</p>
+  <input type="text" id="password">
+  <br>
+  <button id="action1">1-全自動操作(開伺服器,上傳設定檔,檢查登入)</button>
+  <br>
+  <button id="action2">2-開伺服器</button>
+  <br>
+  <button id="action3">3-上傳特定檔案</button>
+  <br>
+  <button id="action4">4-下載特定檔案</button>
+  <br>
+  <button id="action5">5-確認登入</button>
+  <br>
+  <button id="action6">6-執行</button>
+  <br>
+  <button id="action7">7-下載Log檔,cookie</button>
+  <br>
+  <button id="action8">8-關閉所有伺服器</button>
+  <br>
+  <div style="border:2px orange solid;padding:15px;">
+    <input type="text" id="command">
+    <button id="submit">submit</button>
+  </div>
+  <br>
+  <div style="border:2px orange solid;padding:15px;">
+    <div style="height:300px;overflow-y:auto;background-color:pink"><p id="infoboard">1</p></div>
+  </div>
+<script>
+
+
+
+
+function ajax(path,data) {
+    var request = new XMLHttpRequest();
+    request.open("POST", path);
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.send(data);
+    request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+            if (request.status === 200) {
+                var type = request.getResponseHeader("Content-Type");
+                if (type.indexOf("application/json") === 0) {               
+                    var data = JSON.parse(request.responseText);
+                    if (data.name != "wait") {
+                        document.getElementById("info").innerHTML = data.value;
+                    } else {
+                        document.getElementById("info").innerHTML = "等待中";
+                    }
+                }
+            } else {
+                alert("Error" + request.status);
+            }
+        }
+    }
+}
+
+
+
+
+document.getElementById("submit").onclick = function() {
+	
+
+    var data = "password=" + document.getElementById("password").value;
+    ajax("/api/",data);
+
+}
+</script>
+
+</body>
+</html>
