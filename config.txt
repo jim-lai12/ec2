@@ -1,0 +1,4 @@
+KeyFile"example.pem"#
+KeyName"example"#這是當初aws申請的名字不是電腦裡的
+InstanceType"t2.micro"#
+SecurityGroupIds""#

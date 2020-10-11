@@ -9,7 +9,13 @@
   <h1 id="info">Hello!  歡迎使用</h1>
   <p>機器數量:</p><p id="number"></p>
   <br>
-  <button id="action2">1-開伺服器</button>
+  <button id="action4">1-上傳特定檔案</button>
+  <br>
+  <button id="action5">2-下載特定檔案</button>
+  <br>
+  <button id="action6">3-執行</button>
+  <br>
+  <button id="action8">4-關閉所有伺服器</button>
   <br>
   <div style="border:2px orange solid;padding:15px;">
     <input type="text" id="command">
@@ -35,7 +41,7 @@ async function download(){
                     var data = JSON.parse(request.responseText);
                     if (data.status != "wait") {
                           document.getElementById("info").innerHTML = "Hello!  歡迎使用";
-                          instancenum();
+                          ajax("/api","action=num","number");
                           var msg = document.getElementById("infoboard").innerHTML;
                           msg = msg + data.value;
                           document.getElementById("infoboard").innerHTML = msg;
@@ -60,7 +66,7 @@ async function download(){
 function instancenum(){
 ajax("/api","action=num","number");
 }
-
+instancenum();
 
 
 setInterval(function(){ download(); }, 3000);
@@ -68,7 +74,7 @@ setInterval(function(){ download(); }, 3000);
 
 async function reload(){
 var num = document.getElementById("number").innerHTML;
-if (num != 0) {
+if (num == 0) {
 window.location.reload();
 }
 
@@ -107,8 +113,94 @@ function ajax(path,data,id) {
 }
 
 
-document.getElementById("action2").onclick = function() {
-    var data = "action=creat";
+
+
+
+
+document.getElementById("action4").onclick = function() {
+    var data = "action=upload";
+    var request = new XMLHttpRequest();
+    request.open("POST", "/api");
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.send(data);
+    request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+            if (request.status === 200) {
+                var type = request.getResponseHeader("Content-Type");
+                if (type.indexOf("application/json") === 0) {
+                    var data = JSON.parse(request.responseText);
+                    if (data.status != "wait") {
+                        document.getElementById(id).innerHTML = data.value;
+                    } else {
+                        document.getElementById("info").innerHTML = "等待中";
+                    }
+                }
+            } else {
+                alert("Error" + request.status);
+
+            }
+        }
+    }
+}
+
+document.getElementById("action5").onclick = function() {
+    var data = "action=download";
+    var request = new XMLHttpRequest();
+    request.open("POST", "/api");
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.send(data);
+    request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+            if (request.status === 200) {
+                var type = request.getResponseHeader("Content-Type");
+                if (type.indexOf("application/json") === 0) {
+                    var data = JSON.parse(request.responseText);
+                    if (data.status != "wait") {
+                        document.getElementById(id).innerHTML = data.value;
+                    } else {
+                        document.getElementById("info").innerHTML = "等待中";
+                    }
+                }
+            } else {
+                alert("Error" + request.status);
+
+            }
+        }
+    }
+}
+
+document.getElementById("action6").onclick = function() {
+    var data = "action=exe";
+    var request = new XMLHttpRequest();
+    request.open("POST", "/api");
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.send(data);
+    request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+            if (request.status === 200) {
+                var type = request.getResponseHeader("Content-Type");
+                if (type.indexOf("application/json") === 0) {
+                    var data = JSON.parse(request.responseText);
+                    if (data.status != "wait") {
+                        document.getElementById(id).innerHTML = data.value;
+                    } else {
+                        document.getElementById("info").innerHTML = "等待中";
+                    }
+                }
+            } else {
+                alert("Error" + request.status);
+
+            }
+        }
+    }
+
+
+}
+
+
+
+document.getElementById("action8").onclick = function() {
+    var data = "action=close";
     var request = new XMLHttpRequest();
     request.open("POST", "/api");
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -169,5 +261,3 @@ document.getElementById("submit").onclick = function() {
 
 </body>
 </html>
-
-
