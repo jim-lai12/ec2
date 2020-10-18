@@ -21,11 +21,26 @@
     <input type="text" id="command">
     <button id="submit">submit</button>
   </div>
+  <div id="option">
+  </div>
   <br>
   <div style="border:2px orange solid;padding:15px;">
     <div style="height:300px;overflow-y:auto;background-color:pink" id="infoboard"></div>
   </div>
 <script>
+
+function getlist(){
+
+var hostnums = parseInt(document.getElementById("number").innerHTML);
+var list = new Array()
+for(i=1;i<=hostnums;i++){
+	if(document.getElementsByName("usehost")[i-1].checked){
+		list.push(i);
+	}
+}
+return list;
+}
+
 
 async function download(){
     var data = ""
@@ -64,7 +79,41 @@ async function download(){
 
 
 function instancenum(){
-ajax("/api","action=num","number");
+    var request = new XMLHttpRequest();
+    request.open("POST", "/api");
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.send("action=num");
+    request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+            if (request.status === 200) {
+                var type = request.getResponseHeader("Content-Type");
+                if (type.indexOf("application/json") === 0) {
+                    var data = JSON.parse(request.responseText);
+                    if (data.status != "wait") {
+                        document.getElementById("number").innerHTML = data.value;
+                        var hostnum = parseInt(data.value,10);
+                        var msg = '<p>勾選想執行命令的主機</p>';
+                        for(i=1;i<=hostnum;i++){
+                          if (i<10){
+                                    msg = msg+'<label style="margin-right:0.55em"><input type="checkbox" name=usehost value="'+i+'" checked>&nbsp;'+i+'</label>';
+                          }else{
+                                    msg = msg+'<label><input type="checkbox" name=usehost value="'+i+'" checked>'+i+'&nbsp;</label>';
+                          }
+                          if (i%10==0){
+                                    msg = msg+"<br>"
+                          }
+                        }
+                        document.getElementById("option").innerHTML = msg;
+                    } else {
+                        document.getElementById("info").innerHTML = "等待中";
+                    }
+                }
+            } else {
+                alert("Error" + request.status);
+
+            }
+        }
+    }
 }
 instancenum();
 
@@ -118,7 +167,8 @@ function ajax(path,data,id) {
 
 
 document.getElementById("action4").onclick = function() {
-    var data = "action=upload";
+    var uselist = getlist();
+    var data = "action=upload&list="+uselist.toString();
     var request = new XMLHttpRequest();
     request.open("POST", "/api");
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -144,7 +194,8 @@ document.getElementById("action4").onclick = function() {
 }
 
 document.getElementById("action5").onclick = function() {
-    var data = "action=download";
+    var uselist = getlist();
+    var data = "action=download&list="+uselist.toString();
     var request = new XMLHttpRequest();
     request.open("POST", "/api");
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -170,7 +221,8 @@ document.getElementById("action5").onclick = function() {
 }
 
 document.getElementById("action6").onclick = function() {
-    var data = "action=exe";
+    var uselist = getlist();
+    var data = "action=exe&list="+uselist.toString();
     var request = new XMLHttpRequest();
     request.open("POST", "/api");
     request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

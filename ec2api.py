@@ -1,15 +1,28 @@
 import flask
 from flask import render_template
-from flask import Flask, jsonify,request
+from flask import Flask, jsonify,request,abort
 import json
 from server.ec2 import EC2
 import threading
 from config.getconfig import Config
+import Queue
 
 config = Config()
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 model = EC2(config.KeyFile,config.KeyName,config.InstanceType,config.SecurityGroupIds)
+history = Queue.Queue()
+
+
+
+def control(history,model):
+    while True:
+        task = model.needcommand.get()
+        history.put(task[0])
+        model.msg.put(task[1])
+
+
+
 @app.route("/", methods=["GET"])
 def home():
     if model.numbernow == 0:
@@ -22,11 +35,25 @@ def apiserver():
     act = request.form.get('action')
     if act == "command":
         value = request.form.get('command')
-        model.command.put(value)
-        return jsonify(status="wait", value="wait")
+        if value != "":
+            if not(history.empty()):
+                go = history.get()
+                if go == "open":
+                    model.opencommand.put(value)
+                    return jsonify(status="wait", value="wait")
+                elif go == "exe":
+                    model.execommand.put(value)
+                    return jsonify(status="wait", value="wait")
+                elif go == "upload":
+                    model.uploadcommand.put(value)
+                    return jsonify(status="wait", value="wait")
+                elif go == "download":
+                    model.downloadcommand.put(value)
+                    return jsonify(status="wait", value="wait")
+        abort(404)
     elif act == "num":
         return jsonify(status="Hello, API", value=model.numbernow)
-    elif act == "creat":
+    elif act == "create":
         t = threading.Thread(target=model.openserver)
         t.start()
         return jsonify(status="wait", value="wait")
@@ -35,15 +62,18 @@ def apiserver():
         t.start()
         return jsonify(status="wait", value="wait")
     elif act == "exe":
-        t = threading.Thread(target=model.commandexe)
+        uselist = request.form.get('list').encode("utf-8").split(",")
+        t = threading.Thread(target=model.commandexe,args = (uselist,))
         t.start()
         return jsonify(status="wait", value="wait")
     elif act == "upload":
-        t = threading.Thread(target=model.upload())
+        uselist = request.form.get('list').encode("utf-8").split(",")
+        t = threading.Thread(target=model.upload,args = (uselist,))
         t.start()
         return jsonify(status="wait", value="wait")
     elif act == "download":
-        t = threading.Thread(target=model.download)
+        uselist = request.form.get('list').encode("utf-8").split(",")
+        t = threading.Thread(target=model.download,args = (uselist,))
         t.start()
         return jsonify(status="wait", value="wait")
 
@@ -63,4 +93,6 @@ def getmsg():
         return jsonify(status="",value=a)
 
 
+t = threading.Thread(target=control,args = (history,model,))
+t.start()
 app.run()
