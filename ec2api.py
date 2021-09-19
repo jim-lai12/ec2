@@ -4,7 +4,7 @@ from flask import Flask, jsonify,request,abort
 import json
 from server.ec2 import EC2
 import threading
-from config.getconfig import Config
+from get.getconfig import Config
 import Queue
 
 config = Config()
@@ -47,6 +47,9 @@ def apiserver():
                 elif go == "upload":
                     model.uploadcommand.put(value)
                     return jsonify(status="wait", value="wait")
+                elif go == "uploadbysort":
+                    model.uploadcommand.put(value)
+                    return jsonify(status="wait", value="wait")
                 elif go == "download":
                     model.downloadcommand.put(value)
                     return jsonify(status="wait", value="wait")
@@ -69,6 +72,11 @@ def apiserver():
     elif act == "upload":
         uselist = request.form.get('list').encode("utf-8").split(",")
         t = threading.Thread(target=model.upload,args = (uselist,))
+        t.start()
+        return jsonify(status="wait", value="wait")
+    elif act == "uploadbysort":
+        uselist = request.form.get('list').encode("utf-8").split(",")
+        t = threading.Thread(target=model.uploadbysort,args = (uselist,))
         t.start()
         return jsonify(status="wait", value="wait")
     elif act == "download":
@@ -95,4 +103,4 @@ def getmsg():
 
 t = threading.Thread(target=control,args = (history,model,))
 t.start()
-app.run()
+app.run(host='0.0.0.0')

@@ -138,7 +138,6 @@ class EC2(object):
 	def download(self,uselist):
 		self.workstatus = True
 		ec2 = boto3.resource('ec2')
-		i = 1
 		self.needcommand.put(["download","在這裡原始檔名:  "])
 		local = self.downloadcommand.get()
 		self.needcommand.put(["download","下載後檔名(可加路徑,副檔名另加):  "])
@@ -155,7 +154,6 @@ class EC2(object):
 	def upload(self,uselist):
 		self.workstatus = True
 		ec2 = boto3.resource('ec2')
-		i = 1
 		self.needcommand.put(["upload","在這裡原始檔名:  "])
 		local = self.uploadcommand.get()
 		self.needcommand.put(["upload","上傳後新檔名:  "])
@@ -165,6 +163,23 @@ class EC2(object):
 			x.append(threading.Thread(target=self.uploadfun, args = (ec2,i,local,new,)))
 			x[len(x)-1].start()
 		self.workstatus = False
+
+	def uploadbysort(self,uselist):
+		self.workstatus = True
+		ec2 = boto3.resource('ec2')
+		self.needcommand.put(["upload","在這裡原始檔名(可加路徑,副檔名另加):  "])
+		localname = self.uploadcommand.get()
+		self.needcommand.put(["upload","副檔名(不用加點):  "])
+		localextension = self.uploadcommand.get()
+		self.needcommand.put(["upload","上傳後新檔名:  "])
+		new = self.uploadcommand.get()
+		x = []
+		for i in uselist:
+			local = localname+str(i)+"."+localextension
+			x.append(threading.Thread(target=self.uploadfun, args = (ec2,i,local,new,)))
+			x[len(x)-1].start()
+		self.workstatus = False
+
 
 
 	def downloadfun(self,ec2, i, local, new, mode):

@@ -11,11 +11,13 @@
   <br>
   <button id="action4">1-上傳特定檔案</button>
   <br>
-  <button id="action5">2-下載特定檔案</button>
+  <button id="action7">2-上傳檔案(檔名+編號+.副檔名)</button>
   <br>
-  <button id="action6">3-執行</button>
+  <button id="action5">3-下載特定檔案</button>
   <br>
-  <button id="action8">4-關閉所有伺服器</button>
+  <button id="action6">4-執行</button>
+  <br>
+  <button id="action8">5-關閉所有伺服器</button>
   <br>
   <div style="border:2px orange solid;padding:15px;">
     <input type="text" id="command">
@@ -192,6 +194,37 @@ document.getElementById("action4").onclick = function() {
         }
     }
 }
+
+
+document.getElementById("action7").onclick = function() {
+    var uselist = getlist();
+    var data = "action=uploadbysort&list="+uselist.toString();
+    var request = new XMLHttpRequest();
+    request.open("POST", "/api");
+    request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    request.send(data);
+    request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+            if (request.status === 200) {
+                var type = request.getResponseHeader("Content-Type");
+                if (type.indexOf("application/json") === 0) {
+                    var data = JSON.parse(request.responseText);
+                    if (data.status != "wait") {
+                        document.getElementById(id).innerHTML = data.value;
+                    } else {
+                        document.getElementById("info").innerHTML = "等待中";
+                    }
+                }
+            } else {
+                alert("Error" + request.status);
+
+            }
+        }
+    }
+}
+
+
+
 
 document.getElementById("action5").onclick = function() {
     var uselist = getlist();
